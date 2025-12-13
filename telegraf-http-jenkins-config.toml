@@ -143,6 +143,9 @@
  
   ## Set response_timeout
   response_timeout = "15s"
+  
+  ## Collection interval override - Jenkins takes longer to collect all data
+  interval = "120s"
  
   ## Optional TLS Config
   # tls_ca = "/etc/telegraf/ca.pem"
@@ -199,6 +202,9 @@
   ## Timeout for HTTP requests
   timeout = "15s"
   
+  ## Collection interval override - sync with Jenkins plugin
+  interval = "120s"
+  
   ## Optional TLS Config
   # insecure_skip_verify = false
   
@@ -226,5 +232,26 @@
       disk_available = "monitorData/hudson.node_monitors.DiskSpaceMonitor/size"
       temp_available = "monitorData/hudson.node_monitors.TemporarySpaceMonitor/size"
       response_time = "monitorData/hudson.node_monitors.ResponseTimeMonitor/average"
+
+###############################################################################
+#                            PROCESSOR PLUGINS                                #
+###############################################################################
+
+# Convert HTTP plugin fields to integers to match InfluxDB schema from Jenkins plugin
+[[processors.converter]]
+  ## Apply only to jenkins_node measurement from HTTP input
+  namepass = ["jenkins_node"]
+  
+  [processors.converter.fields]
+    ## Ensure all numeric fields are integers
+    integer = [
+      "memory_available",
+      "memory_total",
+      "swap_available",
+      "swap_total",
+      "disk_available",
+      "temp_available",
+      "response_time"
+    ]
 
 
