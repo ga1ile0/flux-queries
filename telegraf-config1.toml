@@ -1,0 +1,321 @@
+# Configuration for telegraf agent
+[agent]
+  ## Default data collection interval for all inputs
+  interval = "60s"
+  ## Rounds collection interval to 'interval'
+  ## ie, if interval="10s" then always collect on :00, :10, : 20, etc.
+  round_interval = true
+ 
+  ## Telegraf will send metrics to outputs in batches of at most
+  ## metric_batch_size metrics. 
+  ## This controls the size of writes that Telegraf sends to output plugins.
+  metric_batch_size = 1000
+ 
+  ## Maximum number of unwritten metrics per output.  Increasing this value
+  ## allows for longer periods of output downtime without dropping metrics at the
+  ## cost of higher maximum memory usage.
+  metric_buffer_limit = 10000
+ 
+  ## Collection jitter is used to jitter the collection by a random amount.
+  ## Each plugin will sleep for a random time within jitter before collecting.
+  ## This can be used to avoid many plugins querying things like sysfs at the
+  ## same time, which can have a measurable effect on the system. 
+  collection_jitter = "0s"
+ 
+  ## Default flushing interval for all outputs.  Maximum flush_interval will be
+  ## flush_interval + flush_jitter
+  flush_interval = "60s"
+  ## Jitter the flush interval by a random amount. This is primarily to avoid
+  ## large write spikes for users running a large number of telegraf instances. 
+  ## ie, a jitter of 5s and interval 10s means flushes will happen every 10-15s
+  flush_jitter = "0s"
+ 
+  ## By default or when set to "0s", precision will be set to the same
+  ## timestamp order as the collection interval, with the maximum being 1s. 
+  ##   ie, when interval = "10s", precision will be "1s"
+  ##       when interval = "250ms", precision will be "1ms"
+  ## Precision will NOT be used for service inputs. It is up to each individual
+  ## service input to set the timestamp at the appropriate precision. 
+  ## Valid time units are "ns", "us" (or "µs"), "ms", "s".
+  precision = ""
+ 
+  ## Log at debug level. 
+  debug = true
+  ## Log only error level messages.
+  # quiet = false
+ 
+  ## Log target controls the destination for logs and can be one of "file",
+  ## "stderr" or, on Windows, "eventlog".  When set to "file", the output file
+  ## is determined by the "logfile" setting.
+  logtarget = "file"
+ 
+  ## Name of the file to be logged to when using the "file" logtarget.  If set to
+  ## the empty string then logs are written to stderr. 
+  logfile = "jenkins-logs.txt"
+ 
+  ## The logfile will be rotated after the time interval specified.  When set
+  ## to 0 no time based rotation is performed.  Logs are rotated only when
+  ## written to, if there is no log activity rotation may be delayed. 
+  logfile_rotation_interval = "1d"
+ 
+  ## The logfile will be rotated when it becomes larger than the specified
+  ## size.  When set to 0 no size based rotation is performed.
+  # logfile_rotation_max_size = "0MB"
+ 
+  ## Maximum number of rotated archives to keep, any older logs are deleted.
+  ## If set to -1, no archives are removed.
+  logfile_rotation_max_archives = 30
+ 
+  ## Pick a timezone to use when logging or type 'local' for local time. 
+  ## Example: America/Chicago
+  # log_with_timezone = ""
+ 
+  ## Override default hostname, if empty use os. Hostname()
+  hostname = ""
+  ## If set to true, do no set the "host" tag in the telegraf agent.
+  omit_hostname = true
+
+[[outputs.influxdb_v2]]
+  ## The URLs of the InfluxDB cluster nodes. 
+  ##
+  ## Multiple URLs can be specified for a single cluster, only ONE of the
+  ## urls will be written to each interval. 
+  ##   ex: urls = ["https://us-west-2-1.aws.cloud2.influxdata.com"]
+  urls = ["<url of my influx>"]
+ 
+  ## Token for authentication.
+  token = "$INFLUX_TOKEN"
+ 
+  ## Organization is the name of the organization you wish to write to; must exist.
+  organization = "org"
+ 
+  ## Destination bucket to write into.
+  bucket = "pipelines"
+ 
+  ## The value of this tag will be used to determine the bucket.   If this
+  ## tag is not set the 'bucket' option is used as the default.
+  # bucket_tag = ""
+ 
+  ## If true, the bucket tag will not be added to the metric.
+  # exclude_bucket_tag = false
+ 
+  ## Timeout for HTTP messages.
+  # timeout = "5s"
+ 
+  ## Additional HTTP headers
+  # http_headers = {"X-Special-Header" = "Special-Value"}
+ 
+  ## HTTP Proxy override, if unset values the standard proxy environment
+  ## variables are consulted to determine which proxy, if any, should be used.
+  # http_proxy = "http://corporate.proxy:3128"
+ 
+  ## HTTP User-Agent
+  # user_agent = "telegraf"
+ 
+  ## Content-Encoding for write request body, can be set to "gzip" to
+  ## compress body or "identity" to apply no encoding.
+  # content_encoding = "gzip"
+ 
+  ## Enable or disable uint support for writing uints influxdb 2.0.
+  # influx_uint_support = false
+ 
+  ## Optional TLS Config for use on HTTP connections.
+  # tls_ca = "/etc/telegraf/ca.pem"
+  # tls_cert = "/etc/telegraf/cert.pem"
+  # tls_key = "/etc/telegraf/key.pem"
+  ## Use TLS but skip chain & host verification
+  # insecure_skip_verify = false
+
+# Read jobs and cluster metrics from Jenkins instances
+[[inputs.jenkins]]
+  ## The Jenkins URL in the format "schema://host:port"
+  url = "<url of my jenkins>"
+  # username = "admin"
+  # password = "admin"
+ 
+  ## Set response_timeout
+  response_timeout = "15s"
+ 
+  ## Optional TLS Config
+  # tls_ca = "/etc/telegraf/ca.pem"
+  # tls_cert = "/etc/telegraf/cert. pem"
+  # tls_key = "/etc/telegraf/key.pem"
+  ## Use SSL but skip chain & host verification
+  # insecure_skip_verify = false
+ 
+  ## Optional Max Job Build Age filter
+  ## Default 1 hour, ignore builds older than max_build_age
+  max_build_age = "10d"
+ 
+  ## Optional Sub Job Depth filter
+  ## Jenkins can have unlimited layer of sub jobs
+  ## This config will limit the layers of pulling, default value 0 means
+  ## unlimited pulling until no more sub jobs
+  # max_subjob_depth = 0
+ 
+  ## Optional Sub Job Per Layer
+  ## In workflow-multibranch-plugin, each branch will be created as a sub job.
+  ## This config will limit to call only the lasted branches in each layer,
+  ## empty will use default value 10
+  # max_subjob_per_layer = 10
+ 
+  ## Jobs to include or exclude from gathering
+  ## When using both lists, job_exclude has priority. 
+  ## Wildcards are supported: [ "jobA/*", "jobB/subjob1/*"]
+  # job_include = [ "*" ]
+  # job_exclude = [ ]
+ 
+  ## Nodes to include or exclude from gathering
+  ## When using both lists, node_exclude has priority. 
+  # node_include = [ "*" ]
+  # node_exclude = [ ]
+ 
+  ## Worker pool for jenkins plugin only
+  ## Empty this field will use default value 5
+  # max_connections = 5
+
+# Collect Jenkins node metrics using HTTP input plugin
+# This is a workaround for the jenkins plugin not parsing monitorData correctly
+[[inputs.http]]
+  ## Jenkins computer/node metrics endpoint
+  urls = ["<url of my jenkins>: 8443/computer/api/json"]
+  
+  ## HTTP method
+  method = "GET"
+  
+  ## Optional HTTP Basic Auth Credentials
+  ## Replace with your Jenkins username and personal auth token
+  username = "your-username"
+  password = "your-personal-auth-token"
+  
+  ## Response timeout
+  timeout = "15s"
+  
+  ## Optional TLS Config (uncomment if needed)
+  # tls_ca = "/etc/telegraf/ca.pem"
+  # tls_cert = "/etc/telegraf/cert.pem"
+  # tls_key = "/etc/telegraf/key.pem"
+  ## Use TLS but skip chain & host verification
+  # insecure_skip_verify = false
+  
+  ## Data format to consume
+  data_format = "json_v2"
+  
+  [[inputs.http.json_v2]]
+    ## Measurement name override
+    measurement_name = "jenkins_node_monitor"
+    
+    [[inputs.http.json_v2.object]]
+      ## Path to the array of computer nodes
+      path = "computer"
+      
+      ## Tags to extract from each node
+      tags = ["displayName"]
+      
+      ## Rename displayName tag to node_name for consistency
+      [inputs.http.json_v2.object.renames]
+        displayName = "node_name"
+      
+      ## Field:  num_executors
+      [[inputs.http.json_v2.object.field]]
+        path = "numExecutors"
+        rename = "num_executors"
+        type = "int"
+      
+      ## Field: offline status
+      [[inputs.http.json_v2.object.field]]
+        path = "offline"
+        rename = "offline"
+        type = "bool"
+      
+      ## Field: disk_available (from DiskSpaceMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\. node_monitors\\.DiskSpaceMonitor. size"
+        rename = "disk_available"
+        type = "int"
+        optional = true
+      
+      ## Field: disk_path (will be converted to tag below)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\.DiskSpaceMonitor.path"
+        rename = "disk_path"
+        type = "string"
+        optional = true
+      
+      ## Field: temp_available (from TemporarySpaceMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\. TemporarySpaceMonitor. size"
+        rename = "temp_available"
+        type = "int"
+        optional = true
+      
+      ## Field: temp_path (will be converted to tag below)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\.TemporarySpaceMonitor.path"
+        rename = "temp_path"
+        type = "string"
+        optional = true
+      
+      ## Field: memory_available (from SwapSpaceMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.availablePhysicalMemory"
+        rename = "memory_available"
+        type = "int"
+        optional = true
+      
+      ## Field: memory_total (from SwapSpaceMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.totalPhysicalMemory"
+        rename = "memory_total"
+        type = "int"
+        optional = true
+      
+      ## Field: swap_available (from SwapSpaceMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.availableSwapSpace"
+        rename = "swap_available"
+        type = "int"
+        optional = true
+      
+      ## Field: swap_total (from SwapSpaceMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.totalSwapSpace"
+        rename = "swap_total"
+        type = "int"
+        optional = true
+      
+      ## Field: response_time (from ResponseTimeMonitor)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData. hudson\\.node_monitors\\. ResponseTimeMonitor.average"
+        rename = "response_time"
+        type = "int"
+        optional = true
+      
+      ## Field: architecture (will be converted to tag below)
+      [[inputs.http.json_v2.object.field]]
+        path = "monitorData.hudson\\.node_monitors\\. ArchitectureMonitor"
+        rename = "arch"
+        type = "string"
+        optional = true
+
+# Convert string fields to tags for better querying
+[[processors. converter]]
+  ## Only apply to jenkins_node_monitor measurement
+  namepass = ["jenkins_node_monitor"]
+  
+  [processors.converter.fields]
+    ## Convert these fields to tags
+    string = ["disk_path", "temp_path", "arch"]
+
+# Add a status tag based on offline field
+[[processors.enum]]
+  namepass = ["jenkins_node_monitor"]
+  
+  [[processors.enum.mapping]]
+    ## Create status tag from offline boolean
+    field = "offline"
+    dest = "status"
+    
+    [processors.enum.mapping.value_mappings]
+      false = "online"
+      true = "offline"
