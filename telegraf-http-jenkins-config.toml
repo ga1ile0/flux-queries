@@ -214,43 +214,43 @@
       
       ## Fields - memory, swap, disk, temp, and response time
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.availablePhysicalMemory"
+        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].availablePhysicalMemory'
         type = "int"
         optional = true
         rename = "memory_available"
       
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.totalPhysicalMemory"
+        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].totalPhysicalMemory'
         type = "int"
         optional = true
         rename = "memory_total"
       
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.availableSwapSpace"
+        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].availableSwapSpace'
         type = "int"
         optional = true
         rename = "swap_available"
       
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.SwapSpaceMonitor.totalSwapSpace"
+        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].totalSwapSpace'
         type = "int"
         optional = true
         rename = "swap_total"
       
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.DiskSpaceMonitor.size"
+        path = 'monitorData.["hudson.node_monitors.DiskSpaceMonitor"].size'
         type = "int"
         optional = true
         rename = "disk_available"
       
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.TemporarySpaceMonitor.size"
+        path = 'monitorData.["hudson.node_monitors.TemporarySpaceMonitor"].size'
         type = "int"
         optional = true
         rename = "temp_available"
       
       [[inputs.http.json_v2.object.field]]
-        path = "monitorData.hudson\\.node_monitors\\.ResponseTimeMonitor.average"
+        path = 'monitorData.["hudson.node_monitors.ResponseTimeMonitor"].average'
         type = "int"
         optional = true
         rename = "response_time"
@@ -261,17 +261,17 @@
         rename = "node_name"
       
       [[inputs.http.json_v2.object.tag]]
-        path = "monitorData.hudson\\.node_monitors\\.ArchitectureMonitor"
+        path = 'monitorData.["hudson.node_monitors.ArchitectureMonitor"]'
         optional = true
         rename = "arch"
       
       [[inputs.http.json_v2.object.tag]]
-        path = "monitorData.hudson\\.node_monitors\\.DiskSpaceMonitor.path"
+        path = 'monitorData.["hudson.node_monitors.DiskSpaceMonitor"].path'
         optional = true
         rename = "disk_path"
       
       [[inputs.http.json_v2.object.tag]]
-        path = "monitorData.hudson\\.node_monitors\\.TemporarySpaceMonitor.path"
+        path = 'monitorData.["hudson.node_monitors.TemporarySpaceMonitor"].path'
         optional = true
         rename = "temp_path"
 
