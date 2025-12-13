@@ -182,11 +182,11 @@
   ## Empty this field will use default value 5
   # max_connections = 5
 
-# Jenkins Computer/Node API - Supplement missing node metrics via HTTP
+# Jenkins Computer/Node API - Supplement missing node metrics via HTTP (XML format)
 [[inputs.http]]
-  ## Jenkins computer API endpoint - fetches missing arch, paths, memory/disk metrics
+  ## Jenkins computer API endpoint - fetches missing arch, paths, memory/disk metrics using XML
   urls = [
-    "https://qcjenkins02.testbbh.com:8443/computer/api/json"
+    "https://qcjenkins02.testbbh.com:8443/computer/api/xml"
   ]
   
   ## HTTP method
@@ -202,77 +202,29 @@
   ## Optional TLS Config
   # insecure_skip_verify = false
   
-  ## Data format to consume
-  data_format = "json_v2"
+  ## Data format - XML with XPath parsing
+  data_format = "xml"
+  name_override = "jenkins_node"
   
-  ## Parse individual computer/node metrics for missing fields only
-  [[inputs.http.json_v2]]
-    measurement_name = "jenkins_node"
+  ## XML/XPath configuration for extracting node metrics
+  [[inputs.http.xml]]
+    metric_selection = "/computerSet/computer"
     
-    [[inputs.http.json_v2.object]]
-      path = "computer"
-      
-      ## Fields - memory, swap, disk, temp, and response time
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].availablePhysicalMemory'
-        type = "int"
-        optional = true
-        rename = "memory_available"
-      
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].totalPhysicalMemory'
-        type = "int"
-        optional = true
-        rename = "memory_total"
-      
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].availableSwapSpace'
-        type = "int"
-        optional = true
-        rename = "swap_available"
-      
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.SwapSpaceMonitor"].totalSwapSpace'
-        type = "int"
-        optional = true
-        rename = "swap_total"
-      
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.DiskSpaceMonitor"].size'
-        type = "int"
-        optional = true
-        rename = "disk_available"
-      
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.TemporarySpaceMonitor"].size'
-        type = "int"
-        optional = true
-        rename = "temp_available"
-      
-      [[inputs.http.json_v2.object.field]]
-        path = 'monitorData.["hudson.node_monitors.ResponseTimeMonitor"].average'
-        type = "int"
-        optional = true
-        rename = "response_time"
-      
-      ## Tags - arch, disk_path, temp_path, node_name
-      [[inputs.http.json_v2.object.tag]]
-        path = "displayName"
-        rename = "node_name"
-      
-      [[inputs.http.json_v2.object.tag]]
-        path = 'monitorData.["hudson.node_monitors.ArchitectureMonitor"]'
-        optional = true
-        rename = "arch"
-      
-      [[inputs.http.json_v2.object.tag]]
-        path = 'monitorData.["hudson.node_monitors.DiskSpaceMonitor"].path'
-        optional = true
-        rename = "disk_path"
-      
-      [[inputs.http.json_v2.object.tag]]
-        path = 'monitorData.["hudson.node_monitors.TemporarySpaceMonitor"].path'
-        optional = true
-        rename = "temp_path"
+    ## Tags - node identification and paths
+    [inputs.http.xml.tags]
+      node_name = "displayName"
+      arch = "monitorData/hudson.node_monitors.ArchitectureMonitor"
+      disk_path = "monitorData/hudson.node_monitors.DiskSpaceMonitor/path"
+      temp_path = "monitorData/hudson.node_monitors.TemporarySpaceMonitor/path"
+    
+    ## Fields - memory, swap, disk, temp metrics in bytes
+    [inputs.http.xml.fields_int]
+      memory_available = "monitorData/hudson.node_monitors.SwapSpaceMonitor/availablePhysicalMemory"
+      memory_total = "monitorData/hudson.node_monitors.SwapSpaceMonitor/totalPhysicalMemory"
+      swap_available = "monitorData/hudson.node_monitors.SwapSpaceMonitor/availableSwapSpace"
+      swap_total = "monitorData/hudson.node_monitors.SwapSpaceMonitor/totalSwapSpace"
+      disk_available = "monitorData/hudson.node_monitors.DiskSpaceMonitor/size"
+      temp_available = "monitorData/hudson.node_monitors.TemporarySpaceMonitor/size"
+      response_time = "monitorData/hudson.node_monitors.ResponseTimeMonitor/average"
 
 
