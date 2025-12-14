@@ -655,6 +655,78 @@ from(bucket: "pipelines")
 
 ---
 
+## 25. Average Duration of Last Build of All Jobs
+**Visualization Type:** Stat
+
+Shows the average duration (in seconds) of the most recent build across all jobs.
+
+```flux
+from(bucket: "pipelines")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "jenkins_job")
+  |> filter(fn: (r) => r["_field"] == "duration")
+  |> group(columns: ["name"])
+  |> last()
+  |> group()
+  |> mean()
+  |> map(fn: (r) => ({_value: r._value / 1000.0}))
+```
+
+---
+
+## 26. Number of Jobs Over Time
+**Visualization Type:** Time series (Line chart)
+
+Shows the count of unique jobs over time with 1-hour aggregation windows.
+
+```flux
+from(bucket: "pipelines")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "jenkins_job")
+  |> filter(fn: (r) => r["_field"] == "number")
+  |> aggregateWindow(every: 1h, fn: last, createEmpty: false)
+  |> group(columns: ["_time"])
+  |> distinct(column: "name")
+  |> count()
+```
+
+---
+
+## 27. Number of Builds Over Time
+**Visualization Type:** Time series (Bar chart)
+
+Shows the total count of builds executed per hour across all jobs.
+
+```flux
+from(bucket: "pipelines")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "jenkins_job")
+  |> filter(fn: (r) => r["_field"] == "number")
+  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)
+  |> group(columns: ["_time"])
+  |> sum()
+```
+
+---
+
+## 28. Cumulative Sum of Builds Over Time
+**Visualization Type:** Time series (Line chart)
+
+Shows the cumulative total of all builds executed over time.
+
+```flux
+from(bucket: "pipelines")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "jenkins_job")
+  |> filter(fn: (r) => r["_field"] == "number")
+  |> aggregateWindow(every: 1h, fn: count, createEmpty: false)
+  |> group(columns: ["_time"])
+  |> sum()
+  |> cumulativeSum()
+```
+
+---
+
 ## Notes
 
 - **Time Range Variables**: All queries use `v.timeRangeStart` and `v.timeRangeStop` which Grafana automatically provides based on the dashboard's time range selector.
